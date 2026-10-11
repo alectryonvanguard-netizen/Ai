@@ -1,0 +1,66 @@
+name: Build QYRONEX AI Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Build QYRONEX AI APK
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install system packages for Buildozer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip \
+            build-essential autoconf libtool pkg-config \
+            zlib1g-dev libncurses-dev libtinfo6 cmake \
+            libffi-dev libssl-dev
+
+      - name: Install Buildozer and Cython
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install buildozer "Cython==0.29.36"
+
+      - name: Check required project files
+        run: |
+          test -f main.py
+          test -f buildozer.spec
+          test -f requirements.txt
+          test -f qyronex_logo.png
+
+      - name: Build debug APK
+        env:
+          BUILDOZER_WARN_ON_ROOT: '0'
+        run: buildozer android debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qyronex-ai-debug-apk
+          path: bin/*.apk
+          if-no-files-found: error
+          retention-days: 14
