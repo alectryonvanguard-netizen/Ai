@@ -21,29 +21,27 @@ jobs:
       - name: Install Android build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip build-essential python3-pip python3-setuptools \
-            python3-wheel autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-            libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           python -m pip install --upgrade pip
-          python -m pip install buildozer cython==0.29.36
+          python -m pip install buildozer cython virtualenv
 
       - name: Configure Gemini API for this build
         env:
           GEMINIAPIKEY: ${{ secrets.GEMINIAPIKEY }}
         run: |
           if [ -z "$GEMINIAPIKEY" ]; then
-            echo "Missing repository secret GEMINIAPIKEY. Add it under Settings > Secrets and variables > Actions."
+            echo "Missing repository secret GEMINIAPIKEY"
             exit 1
           fi
           python - <<'PY'
           import os
           key = os.environ["GEMINIAPIKEY"]
           with open("api_config.py", "w", encoding="utf-8") as f:
-              f.write("GEMINIAPIKEY = " + repr(key) + "\\n")
+              f.write("GEMINIAPIKEY = " + repr(key) + "\n")
           PY
 
       - name: Build debug APK
-        run: buildozer android debug
+        run: yes | buildozer android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
