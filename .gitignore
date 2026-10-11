@@ -1,0 +1,5 @@
+api_config.py
+bin/
+.buildozer/
+__pycache__/
+*.pyc
