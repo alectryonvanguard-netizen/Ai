@@ -31,13 +31,13 @@ jobs:
         env:
           GEMINIAPIKEY: ${{ secrets.GEMINIAPIKEY }}
         run: |
-          if [ -z "$GEMINI_API_KEY" ]; then
+          if [ -z "$GEMINIAPIKEY" ]; then
             echo "Missing repository secret GEMINIAPIKEY. Add it under Settings > Secrets and variables > Actions."
             exit 1
           fi
           python - <<'PY'
           import os
-          key = os.environ["GEMINI_API_KEY"]
+          key = os.environ["GEMINIAPIKEY"]
           with open("api_config.py", "w", encoding="utf-8") as f:
               f.write("GEMINIAPIKEY = " + repr(key) + "\\n")
           PY
