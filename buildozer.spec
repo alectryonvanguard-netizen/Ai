@@ -8,6 +8,9 @@ version = 0.2.0
 requirements = python3,kivy
 orientation = portrait
 fullscreen = 0
+presplash.filename = %(source.dir)s/logo.png
+icon.filename = %(source.dir)s/icon.png
+
 android.permissions = INTERNET
 android.api = 33
 android.minapi = 21
