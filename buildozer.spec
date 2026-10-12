@@ -12,8 +12,8 @@ presplash.filename = logo.png
 icon.filename = icon.png
 
 android.permissions = INTERNET
-android.api = 38
-android.minapi = 36
+android.api = 28
+android.minapi = 21
 android.archs = arm64-v8a
 android.accept_sdk_license = True
 p4a.bootstrap = sdl2
