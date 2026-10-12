@@ -1,5 +1,5 @@
 """
-QYRONEX AI - Kivy app (v1.1)
+RONEX AI - Kivy app (v1.1)
 
 Gemini key (never stored in the app UI, never commit it to GitHub). Provide it by:
   1) environment variable GEMINI_API_KEY, or
@@ -34,7 +34,7 @@ TERMS_VERSION = "1"
 NEWS_INTERVAL = 12 * 3600
 PBKDF2_ROUNDS = 150000
 COMMON_BITS = ("password", "qwerty", "123456", "letmein", "admin", "welcome", "iloveyou",
-               "qyronex", "abc123", "111111", "000000")
+               "ronex", "abc123", "111111", "000000")
 
 
 def normalize_identifier(raw):
@@ -95,8 +95,8 @@ def verify_password(pw, salt_hex, hash_hex):
 
 
 def _keys(master):
-    return (hmac.new(master, b"qyronex-enc", hashlib.sha256).digest(),
-            hmac.new(master, b"qyronex-mac", hashlib.sha256).digest())
+    return (hmac.new(master, b"ronex-enc", hashlib.sha256).digest(),
+            hmac.new(master, b"ronex-mac", hashlib.sha256).digest())
 
 
 def _stream(key, nonce, n):
@@ -114,16 +114,16 @@ def encrypt_bytes(master, data):
     nonce = os.urandom(16)
     s = _stream(ek, nonce, len(data))
     ct = (int.from_bytes(data, "big") ^ int.from_bytes(s, "big")).to_bytes(len(data), "big") if data else b""
-    tag = hmac.new(mk, b"Q1" + nonce + ct, hashlib.sha256).digest()
-    return b"Q1" + nonce + ct + tag
+    tag = hmac.new(mk, b"R1" + nonce + ct, hashlib.sha256).digest()
+    return b"R1" + nonce + ct + tag
 
 
 def decrypt_bytes(master, blob):
-    if len(blob) < 50 or blob[:2] != b"Q1":
+    if len(blob) < 50 or blob[:2] != b"R1":
         raise ValueError("bad data")
     ek, mk = _keys(master)
     nonce, ct, tag = blob[2:18], blob[18:-32], blob[-32:]
-    if not hmac.compare_digest(tag, hmac.new(mk, b"Q1" + nonce + ct, hashlib.sha256).digest()):
+    if not hmac.compare_digest(tag, hmac.new(mk, b"R1" + nonce + ct, hashlib.sha256).digest()):
         raise ValueError("data was modified or key is wrong")
     s = _stream(ek, nonce, len(ct))
     return (int.from_bytes(ct, "big") ^ int.from_bytes(s, "big")).to_bytes(len(ct), "big") if ct else b""
@@ -132,7 +132,7 @@ def decrypt_bytes(master, blob):
 def load_master(folder):
     """Per-device random master key kept in the app's private folder."""
     os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, "qyronex_master.key")
+    path = os.path.join(folder, "ronex_master.key")
     if os.path.exists(path):
         with open(path, "rb") as f:
             k = f.read()
@@ -199,11 +199,11 @@ try:  # real voice input with volume callbacks (Android build with pyjnius)
 except Exception:
     ANDROID_VOICE = False
 
-APP_NAME = "QYRONEX AI"
+APP_NAME = "Ronex AI"
 DEFAULT_MODEL = "gemini-2.5-flash"
 DEFAULT_INSTRUCTIONS = (
-    "You are QYRONEX, a helpful, friendly, honest personal marketing AI assistant inside the "
-    "QYRONEX AI app. Answer clearly, adapt to the user's preferred style, ask a question when a "
+    "You are Ronex AI, a helpful, friendly, honest personal marketing AI assistant inside the "
+    "Ronex AI app. Answer clearly, adapt to the user's preferred style, ask a question when a "
     "request is unclear, and never pretend you completed an action that you did not complete."
 )
 
@@ -229,8 +229,8 @@ CONTENT_TYPES = [
 # Every section has its own chat: own persona, colours, greeting and starter prompts.
 CHANNELS = {
     "main": dict(
-        title="QYRONEX", sub="Marketing main", color=CYAN, bubble="#162447",
-        greeting="Hi! I'm QYRONEX, your all-round marketing assistant. Ask me anything, or tap + to attach a photo or video.",
+        title="Ronex AI", sub="Marketing main", color=CYAN, bubble="#162447",
+        greeting="Hi! I'm Ronex AI, your all-round marketing assistant. Ask me anything, or tap + to attach a photo or video.",
         persona="Role: all-round marketing assistant. Be friendly and conversational, give practical answers in plain language.",
         starters=["Give me 3 quick marketing wins for today", "How do I grow my brand on Instagram?",
                   "Help me write a short bio for my brand"]),
@@ -264,7 +264,7 @@ CHANNELS = {
                   "What marketing trends should I watch?"]),
 }
 
-TERMS_TEXT = """QYRONEX AI - Terms & Conditions (version 1)
+TERMS_TEXT = """Ronex AI - Terms & Conditions (version 1)
 
 1. Your account. You sign up with an email address or phone number and a strong password. Keep your password private. You are responsible for activity on your account.
 
@@ -320,7 +320,7 @@ def get_api_key(user_dir=""):
 
 
 def default_settings():
-    return {"model": DEFAULT_MODEL, "instructions": DEFAULT_INSTRUCTIONS, "assistant_name": "QYRONEX",
+    return {"model": DEFAULT_MODEL, "instructions": DEFAULT_INSTRUCTIONS, "assistant_name": "Ronex AI",
             "user_name": "there", "temperature": 0.7, "prefs": [], "notify": True, "news": True,
             "media_ok": False, "mic_ok": False}
 
@@ -411,7 +411,7 @@ class LogoMark(Widget):
 
     def __init__(self, **kw):
         super().__init__(**kw)
-        self.lbl = Label(text="[b]Q[/b]", markup=True, color=rgba(CYAN))
+        self.lbl = Label(text="[b]R[/b]", markup=True, color=rgba(CYAN))
         self.add_widget(self.lbl)
         self.bind(pos=self.draw, size=self.draw, angle=self.draw, parent=self._parent)
         anim = Animation(angle=360, duration=8)
@@ -624,7 +624,7 @@ PERMS = {
 
 
 # -------------------------------------------------------------------- app
-class QYRONEXAIApp(App):
+class RonexAIApp(App):
     def build(self):
         self.title = APP_NAME
         Window.clearcolor = rgba(BG)
@@ -633,7 +633,7 @@ class QYRONEXAIApp(App):
         except Exception:
             pass
         self.master = load_master(self.user_data_dir)
-        self.vault_path = os.path.join(self.user_data_dir, "qyronex_accounts.dat")
+        self.vault_path = os.path.join(self.user_data_dir, "ronex_accounts.dat")
         self.vault = read_secure(self.vault_path, self.master, None) or {}
         self.vault.setdefault("accounts", {})
         self.vault.setdefault("terms", {})
@@ -672,10 +672,10 @@ class QYRONEXAIApp(App):
 
     # ----------------------------------------------------- storage/accounts
     def user_path(self, aid):
-        return os.path.join(self.user_data_dir, f"qyronex_u_{aid}.dat")
+        return os.path.join(self.user_data_dir, f"ronex_u_{aid}.dat")
 
     def backup_path(self, aid):
-        return os.path.join(self.user_data_dir, f"qyronex_bk_{aid}.dat")
+        return os.path.join(self.user_data_dir, f"ronex_bk_{aid}.dat")
 
     def save_vault(self):
         try:
@@ -809,7 +809,7 @@ class QYRONEXAIApp(App):
 
     def logo(self, **kw):
         try:
-            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "qyronex_logo.png")
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ronex_logo.png")
         except Exception:
             path = ""
         if path and os.path.exists(path):
@@ -879,7 +879,7 @@ class QYRONEXAIApp(App):
         p = BoxLayout(orientation="vertical", padding=dp(20), spacing=dp(10))
         p.add_widget(Widget())
         p.add_widget(self.logo(size_hint_y=None, height=min(Window.width * .7, dp(280))))
-        p.add_widget(TLabel(text="[b]QYRONEX[/b]", markup=True, halign="center", color=rgba(CYAN),
+        p.add_widget(TLabel(text="[b]RONEX AI[/b]", markup=True, halign="center", color=rgba(CYAN),
                             font_size=sp(34), size_hint_y=None, height=dp(50)))
         p.add_widget(TLabel(text="AI ASSISTANT  -  INITIALIZING", halign="center", color=rgba(MUTED),
                             font_size=sp(12), size_hint_y=None, height=dp(24)))
@@ -897,7 +897,7 @@ class QYRONEXAIApp(App):
         col = BoxLayout(orientation="vertical", size_hint_y=None, padding=(dp(20), dp(16)), spacing=dp(10))
         col.bind(minimum_height=col.setter("height"))
         col.add_widget(LogoMark(size_hint_y=None, height=dp(130)))
-        col.add_widget(TLabel(text="[b]QYRONEX[/b]", markup=True, halign="center", color=rgba(CYAN),
+        col.add_widget(TLabel(text="[b]RONEX AI[/b]", markup=True, halign="center", color=rgba(CYAN),
                               font_size=sp(30), size_hint_y=None, height=dp(44)))
         col.add_widget(TLabel(text="Log in to continue" if mode == "login" else "Create your account",
                               halign="center", color=rgba(MUTED), font_size=sp(14), size_hint_y=None, height=dp(24)))
@@ -957,7 +957,7 @@ class QYRONEXAIApp(App):
         col.add_widget(self.btn("Log in" if mode == "login" else "Create account", submit, bg=CYAN, fg=BG,
                                 size_hint_y=None, height=dp(52)))
         col.add_widget(AutoLabel(text="Your account is stored encrypted on this device. There is no guest mode: "
-                                      "you must log in or sign up to use QYRONEX.",
+                                      "you must log in or sign up to use Ronex AI.",
                                  font_size=sp(11), color=rgba(MUTED), halign="center"))
         sv.add_widget(col)
         self.body.add_widget(sv)
@@ -1210,7 +1210,7 @@ class QYRONEXAIApp(App):
         def work():
             info = None
             try:
-                req = urllib.request.Request(UPDATE_URL, headers={"User-Agent": "QYRONEX/" + APP_VERSION})
+                req = urllib.request.Request(UPDATE_URL, headers={"User-Agent": "RONEX/" + APP_VERSION})
                 with urllib.request.urlopen(req, timeout=10) as r:
                     info = json.loads(r.read().decode("utf-8"))
             except Exception:
@@ -1229,7 +1229,7 @@ class QYRONEXAIApp(App):
         if ver_tuple(info["version"]) > ver_tuple(APP_VERSION):
             notes = info.get("notes", "")
             self.add_inbox(f"Update available: v{info['version']}", (notes + "\n" + info.get("url", "")).strip())
-            self.push_notification("QYRONEX update", f"Version {info['version']} is available.")
+            self.push_notification("Ronex AI update", f"Version {info['version']} is available.")
             url = info.get("url")
             items = [("Open download page", lambda: webbrowser.open(url))] if url else []
             if items:
@@ -1252,7 +1252,7 @@ class QYRONEXAIApp(App):
         def locate():
             loc = ""
             try:
-                req = urllib.request.Request("https://ipapi.co/json/", headers={"User-Agent": "QYRONEX/" + APP_VERSION})
+                req = urllib.request.Request("https://ipapi.co/json/", headers={"User-Agent": "RONEX/" + APP_VERSION})
                 with urllib.request.urlopen(req, timeout=10) as r:
                     j = json.loads(r.read().decode("utf-8"))
                 loc = ", ".join(x for x in (j.get("city"), j.get("region"), j.get("country_name")) if x)
@@ -1282,7 +1282,7 @@ class QYRONEXAIApp(App):
             self.data["last_news"] = time.time()
             self.data["location"] = loc
             self.add_inbox(f"Local news - {loc}", ans)
-            self.push_notification("QYRONEX local news", f"New marketing news for {loc}")
+            self.push_notification("Ronex AI local news", f"New marketing news for {loc}")
             if manual:
                 self.show_inbox()
         self.call_ai(prompt, [], done, channel="insights", search=True, count=False)
@@ -1332,7 +1332,7 @@ class QYRONEXAIApp(App):
 
     def ask_bar(self):
         bar = Card(bg=PANEL, radius=14, padding=dp(6), spacing=dp(6))
-        inp = TextInput(hint_text="Ask QYRONEX...", multiline=False, **self.ti_style((0, 0, 0, 0)))
+        inp = TextInput(hint_text="Ask Ronex AI...", multiline=False, **self.ti_style((0, 0, 0, 0)))
 
         def ask(*_):
             t = inp.text.strip()
@@ -1371,7 +1371,7 @@ class QYRONEXAIApp(App):
 
         lg = BoxLayout(orientation="vertical", size_hint_y=.3 if wide else .24)
         lg.add_widget(self.logo(size_hint_y=.62))
-        lg.add_widget(TLabel(text="[b]QYRONEX[/b]", markup=True, halign="center", color=rgba(CYAN),
+        lg.add_widget(TLabel(text="[b]RONEX AI[/b]", markup=True, halign="center", color=rgba(CYAN),
                              font_size=sp(30), size_hint_y=.24))
         lg.add_widget(TLabel(text="- AI ASSISTANT -", halign="center", font_size=sp(11),
                              color=rgba(MUTED), size_hint_y=.14))
@@ -1489,7 +1489,7 @@ class QYRONEXAIApp(App):
         box = BoxLayout(orientation="vertical", spacing=dp(8), padding=dp(10))
         pop = Popup(title="Manage Insights - teach the AI", content=box, size_hint=(.92, .85),
                     background_color=rgba(PANEL))
-        box.add_widget(TLabel(text="Add things QYRONEX should always remember (tone, brand, audience...).",
+        box.add_widget(TLabel(text="Add things Ronex AI should always remember (tone, brand, audience...).",
                               font_size=sp(12), color=rgba(MUTED), size_hint_y=None, height=dp(40)))
         sv = ScrollView(do_scroll_x=False)
         grid = GridLayout(cols=1, size_hint_y=None, spacing=dp(6))
@@ -1598,7 +1598,7 @@ class QYRONEXAIApp(App):
         hdr = BoxLayout(size_hint_y=None, height=dp(52), spacing=dp(6))
         hdr.add_widget(self.btn("<", lambda *_: self.go("home"), fs=18, size_hint=(None, 1), width=dp(44)))
         col = BoxLayout(orientation="vertical")
-        name = self.settings.get("assistant_name", "QYRONEX") if self.channel == "main" else ch["title"]
+        name = self.settings.get("assistant_name", "Ronex AI") if self.channel == "main" else ch["title"]
         col.add_widget(TLabel(text=f"[b]{name}[/b]", markup=True, font_size=sp(18), color=rgba(ch["color"])))
         self.status_label = TLabel(text=ch["sub"], font_size=sp(12), color=rgba(MUTED))
         col.add_widget(self.status_label)
@@ -1655,7 +1655,7 @@ class QYRONEXAIApp(App):
                    padding=dp(10), spacing=dp(4))
         bub.bind(minimum_height=bub.setter("height"))
         bub.bind(height=lambda i, h: setattr(row, "height", h))
-        who = "You" if user else (self.settings.get("assistant_name", "QYRONEX") if self.channel == "main" else ch["title"])
+        who = "You" if user else (self.settings.get("assistant_name", "Ronex AI") if self.channel == "main" else ch["title"])
         bub.add_widget(AutoLabel(text=f"[b]{who}[/b]", markup=True, font_size=sp(12),
                                  color=rgba(WHITE if user else ch["color"])))
         bub.add_widget(AutoLabel(text=str(text), font_size=sp(15)))
@@ -1954,7 +1954,7 @@ class QYRONEXAIApp(App):
                     self.settings[kind + "_ok"] = False
                     self.save_data()
                     refresh()
-                    self.notice("Permission off", "Turned off inside QYRONEX. To fully revoke it, also remove it in "
+                    self.notice("Permission off", "Turned off inside Ronex AI. To fully revoke it, also remove it in "
                                                   "your phone's app settings.")
                 else:
                     self.ensure_perm(kind, after=refresh)
@@ -1991,7 +1991,7 @@ class QYRONEXAIApp(App):
             g.add_widget(w)
             return w
         user = field("Your name", s.get("user_name", ""))
-        name = field("Assistant display name", s.get("assistant_name", "QYRONEX"))
+        name = field("Assistant display name", s.get("assistant_name", "Ronex AI"))
         model = field("Gemini model name", s.get("model", DEFAULT_MODEL))
         instr = field("System instructions (main way to change AI behaviour)",
                       s.get("instructions", DEFAULT_INSTRUCTIONS), h=150, multiline=True)
@@ -2000,7 +2000,7 @@ class QYRONEXAIApp(App):
 
         def save(*_):
             s["user_name"] = user.text.strip() or "there"
-            s["assistant_name"] = name.text.strip() or "QYRONEX"
+            s["assistant_name"] = name.text.strip() or "Ronex AI"
             s["model"] = model.text.strip() or DEFAULT_MODEL
             s["instructions"] = instr.text.strip() or DEFAULT_INSTRUCTIONS
             try:
@@ -2013,10 +2013,10 @@ class QYRONEXAIApp(App):
         action("Reset instructions", lambda: setattr(instr, "text", DEFAULT_INSTRUCTIONS))
         action("Teach the AI (preferences)", self.show_prefs, RED)
         action("Clear chat history", self.clear_history)
-        g.add_widget(AutoLabel(text=f"QYRONEX AI v{APP_VERSION}", color=rgba(MUTED), font_size=sp(11), halign="center"))
+        g.add_widget(AutoLabel(text=f"Ronex AI v{APP_VERSION}", color=rgba(MUTED), font_size=sp(11), halign="center"))
         sv.add_widget(g)
         p.add_widget(sv)
 
 
 if __name__ == "__main__":
-    QYRONEXAIApp().run()
+    RonexAIApp().run()
