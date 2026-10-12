@@ -1,7 +1,7 @@
 [app]
-title = QYRONEX AI
-package.name = qyronexai
-package.domain = org.qyronex
+title = Ronex Ai
+package.name = ronexai
+package.domain = ai.ronex
 source.dir = .
 source.include_exts = py,png,json,kv,txt
 version = 0.2.0
@@ -12,8 +12,8 @@ presplash.filename = logo.png
 icon.filename = icon.png
 
 android.permissions = INTERNET
-android.api = 33
-android.minapi = 21
+android.api = 38
+android.minapi = 36
 android.archs = arm64-v8a
 android.accept_sdk_license = True
 p4a.bootstrap = sdl2
