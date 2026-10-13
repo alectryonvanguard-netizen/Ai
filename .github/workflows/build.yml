@@ -33,7 +33,8 @@ jobs:
             echo "Missing repository secret GEMINIAPIKEY"
             exit 1
           fi
-          run: sed -i "s/PASTE_YOUR_GEMINI_API_KEY_HERE/${GEMINIAPIKEY}/g" main.py
+          sed -i "s/PASTE_YOUR_GEMINI_API_KEY_HERE/${GEMINIAPIKEY}/g" main.py
+
       - name: Build debug APK
         run: yes | buildozer android debug
 
