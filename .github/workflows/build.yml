@@ -18,6 +18,9 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install Android build dependencies
         run: |
           sudo apt-get update
@@ -36,6 +39,9 @@ jobs:
           sed -i "s/PASTE_YOUR_GEMINI_API_KEY_HERE/${GEMINIAPIKEY}/g" main.py
 
       - name: Build debug APK
+        env:
+          ANDROID_HOME: /root/.android/sdk
+          ANDROID_NDK_HOME: /root/.android/sdk/ndk-bundle
         run: yes | buildozer android debug
 
       - name: Upload APK artifact
