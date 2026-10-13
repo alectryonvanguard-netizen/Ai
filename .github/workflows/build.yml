@@ -33,12 +33,8 @@ jobs:
             echo "Missing repository secret GEMINIAPIKEY"
             exit 1
           fi
-          python - <<'PY'
-          import os
-          key = os.environ["GEMINIAPIKEY"]
-          with open("api_config.py", "w", encoding="utf-8") as f:
-              f.write("GEMINIAPIKEY = " + repr(key) + "\n")
-          PY
+          run: sed -i 's/PASTE_YOUR_GEMINI_API_KEY_HERE/'"$GEMINIAPIKEY"'/g' main.py
+
 
       - name: Build debug APK
         run: yes | buildozer android debug
