@@ -3,3 +3,4 @@ bin/
 .buildozer/
 __pycache__/
 *.pyc
+gemini_key.txt
