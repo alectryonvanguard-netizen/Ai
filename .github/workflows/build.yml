@@ -1,15 +1,22 @@
-name: Build RONEX AI Android APK
+
+name: Build Ronex AI APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
     steps:
-      - name: Check out source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Java
@@ -18,36 +25,38 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install Android build dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip build-essential python3-pip python3-setuptools \
-            python3-wheel autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
-            libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
-          python -m pip install --upgrade pip
-          python -m pip install buildozer cython==0.29.36
+          sudo apt-get install -y \
+            git zip unzip \
+            autoconf automake libtool pkg-config \
+            zlib1g-dev libncurses-dev \
+            cmake libffi-dev libssl-dev \
+            libltdl-dev build-essential \
+            ccache \
+            libstdc++6
 
-      - name: Configure Gemini API for this build
-        env:
-          GEMINIAPIKEY: ${{ secrets.GEMINIAPIKEY }}
+      - name: Install Buildozer
         run: |
-          if [ -z "$GEMINIAPIKEY" ]; then
-            echo "Missing repository secret GEMINI_API_KEY. Add it under Settings > Secrets and variables > Actions."
-            exit 1
-          fi
-          python - <<'PY'
-          import os
-          key = os.environ["GEMINIAPIKEY"]
-          with open("api_config.py", "w", encoding="utf-8") as f:
-              f.write("GEMINIAPIKEY = " + repr(key) + "\\n")
-          PY
+          python -m pip install --upgrade pip setuptools wheel
+          pip install "Cython==0.29.36" "buildozer==1.5.0"
 
-      - name: Build debug APK
-        run: buildozer android debug
+      - name: Build APK
+        run: |
+          buildozer android debug
+        env:
+          CI: "1"
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: qyronex-ai-debug-apk
+          name: Ronex-AI-APK
           path: bin/*.apk
           if-no-files-found: error
+          retention-days: 7
