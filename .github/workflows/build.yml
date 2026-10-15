@@ -18,17 +18,12 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-        id: sdk
-
       - name: Install Android build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev build-essential
-          python3 -m pip install --upgrade pip
-          # Explicitly pinning cython to avoid modern compilation build errors with Buildozer
-          python3 -m pip install buildozer "cython<3.0.0" virtualenv
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          python -m pip install --upgrade pip
+          python -m pip install buildozer cython virtualenv
 
       - name: Configure Gemini API for this build
         env:
@@ -38,17 +33,9 @@ jobs:
             echo "Missing repository secret GEMINIAPIKEY"
             exit 1
           fi
-          sed -i "s/PASTE_YOUR_GEMINI_API_KEY_HERE/${GEMINIAPIKEY}/g" main.py
-
+          run: sed -i "s/PASTE_YOUR_GEMINI_API_KEY_HERE/${GEMINIAPIKEY}/g" main.py
       - name: Build debug APK
-        env:
-          # Explicitly link GitHub environments to Buildozer pathways
-          ANDROID_HOME: ${{ steps.sdk.outputs.sdk-path }}
-          ANDROID_SDK_ROOT: ${{ steps.sdk.outputs.sdk-path }}
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-        run: |
-          # Added -v (verbose flag) so logs are descriptive before any truncation happens
-          yes | buildozer -v android debug
+        run: yes | buildozer android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
