@@ -25,7 +25,7 @@ jobs:
       #   packages: "platforms;android-33 build-tools;33.0.2 ndk;25.2.9519653"
 
       # Removed openjdk-17-jdk from apt-get to avoid double-allocation/conflicts
-       Pentest dependency tracking
+      # Pentest dependency tracking
       - name: Install Android build dependencies
         run: |
           sudo apt-get update
