@@ -19,7 +19,7 @@ jobs:
           java-version: "17"
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       # Optional: You can specify explicit SDK/NDK packages here if Buildozer requires a specific API level:
       # with:
       #   packages: "platforms;android-33 build-tools;33.0.2 ndk;25.2.9519653"
