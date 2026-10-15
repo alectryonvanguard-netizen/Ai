@@ -1,4 +1,4 @@
-name: Build Ronex Ai Android APK
+name: Build RONEX AI Android APK
 
 on:
   workflow_dispatch:
@@ -21,25 +21,33 @@ jobs:
       - name: Install Android build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt-get install -y git zip unzip build-essential python3-pip python3-setuptools \
+            python3-wheel autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
+            libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
           python -m pip install --upgrade pip
-          python -m pip install buildozer cython virtualenv
+          python -m pip install buildozer cython==0.29.36
 
       - name: Configure Gemini API for this build
         env:
           GEMINIAPIKEY: ${{ secrets.GEMINIAPIKEY }}
         run: |
           if [ -z "$GEMINIAPIKEY" ]; then
-            echo "Missing repository secret GEMINIAPIKEY"
+            echo "Missing repository secret GEMINI_API_KEY. Add it under Settings > Secrets and variables > Actions."
             exit 1
           fi
-          run: sed -i "s/PASTE_YOUR_GEMINI_API_KEY_HERE/${GEMINIAPIKEY}/g" main.py
+          python - <<'PY'
+          import os
+          key = os.environ["GEMINIAPIKEY"]
+          with open("api_config.py", "w", encoding="utf-8") as f:
+              f.write("GEMINIAPIKEY = " + repr(key) + "\\n")
+          PY
+
       - name: Build debug APK
-        run: yes | buildozer android debug
+        run: buildozer android debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ronex-ai-debug-apk
+          name: qyronex-ai-debug-apk
           path: bin/*.apk
           if-no-files-found: error
